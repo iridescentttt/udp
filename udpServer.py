@@ -41,7 +41,7 @@ class UdpServer(UI.UI):
             # 读取第一个数据包,包中的数据格式为self.start_filename_totalBytes
 
             if self.start == False and data.startswith(b'start'):
-                _, self.fileName, self.totalBytes = str(data).split('_')
+                _, self.fileName, self.totalBytes = str(data).split(':')
                 self.totalBytes = int(self.totalBytes[0:-1], 10)
                 for i in range(1024):
                     self.recvIndex.append(i)
@@ -57,11 +57,11 @@ class UdpServer(UI.UI):
                 self.fp.close()
                 for i in range(100):
                     self.udpAck.sendto(
-                        ("start_"+self.fileName).encode(), ackAddress)
+                        ("start:"+self.fileName).encode(), ackAddress)
 
             # 继续接收数据包
             elif self.start == True and not data.startswith(b'start'):
-                index, data = data.split(b'_', maxsplit=1)
+                index, data = data.split(b':', maxsplit=1)
                 index = int(index.decode())
                 self.lock.acquire()
                 if index in self.recvIndex:
@@ -69,7 +69,7 @@ class UdpServer(UI.UI):
                     self.recvIndex.remove(index)
                     self.recvBytes += len(data)
                 self.udpAck.sendto(
-                    (str(index)+"_"+str(len(data))+"_ACK").encode(), ackAddress)
+                    (str(index)+":"+str(len(data))+":ACK").encode(), ackAddress)
                 self.lock.release()
 
             # 达到缓存上限或者接收完所有的数据包
@@ -95,7 +95,7 @@ class UdpServer(UI.UI):
                 self.lock.acquire()
                 for i in range(100):
                     self.udpAck.sendto(
-                        ("over_"+self.fileName).encode(), ackAddress)
+                        ("over:"+self.fileName).encode(), ackAddress)
                 self.recvBytes = 0
                 self.totalBytes = 0
                 self.positions = 0

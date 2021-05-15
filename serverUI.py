@@ -1,4 +1,3 @@
-import UI
 import udpServer
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QDialog, QHBoxLayout, QVBoxLayout
@@ -14,13 +13,11 @@ class ServerUI(udpServer.UdpServer):
 
     def serverClickLink(self):
         try:
-            # self.port = int(self.portUI.text())
-            # self.serverIP = str(self.ipUI.text())
-            # self.clientIP = str(self.clientIPUI.text())
-            # self.serverAddress = (self.serverIP, self.port)
-            # self.ackAddress = (self.clientIP, 1078)
-            self.port = 8001
-            self.serverAddress = ('172.19.22.169', self.port)
+            self.port = int(self.portUI.text())
+            self.serverIP = str(self.ipUI.text())
+            self.clientIP = str(self.clientIPUI.text())
+            self.serverAddress = (self.serverIP, self.port)
+            self.ackAddress = (self.clientIP, 1078)
             self.udpRecv = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udpAck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udpRecv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

@@ -7,7 +7,12 @@ import socket
 import threading
 import time
 
-
+'''
+@Author: 张涛麟
+@description: 启动程序的主窗口
+@param {*}
+@return {*}
+'''
 class MainWindow(clientUI.ClientUI,serverUI.ServerUI):
     def __init__(self):
         super(MainWindow, self).__init__()

@@ -8,15 +8,27 @@ import time
 import sys
 import math
 
+'''
+@Author: 张涛麟
+@description: 实现客户端的逻辑
+'''
+
 
 class UdpClient(UI.UI):
+    '''
+    @Author: 张涛麟
+    @description: 初始化相关变量
+    @param {*} self
+    @return {*}
+    '''
+
     def __init__(self):
         super(UdpClient, self).__init__()
         self.udpSend = None  # 发送数据的socket
         self.udpAck = None  # 接收ack的socket
         self.serverIP = ""  # 目标ip
         self.clientIP = ""  # 本机ip
-        self.port = 0
+        self.port = 0  # 目标端口
         self.serverAddress = None  # 目标主机地址
         self.ackAddress = None  # 本地监听ack的地址
         self.fileName = None  # 发送的文件名
@@ -65,14 +77,14 @@ class UdpClient(UI.UI):
             if self.start == True:
                 break
             self.udpSend.sendto(
-                f'start_{self.fileName}_{self.totalBytes}'.encode(), self.serverAddress)
+                f'start:{self.fileName}:{self.totalBytes}'.encode(), self.serverAddress)
             time.sleep(0.1)
         # 开始发送文件
         while self.sendBytes < self.totalBytes:
             while self.sendIndex and self.sendBytes < self.totalBytes:
                 for index in self.sendIndex:
                     self.udpSend.sendto(
-                        f'{index}_'.encode(
+                        f'{index}:'.encode(
                         ) + self.data[index *
                                       self.buffSize:(index+1)*self.buffSize],
                         self.serverAddress)
@@ -98,21 +110,23 @@ class UdpClient(UI.UI):
         while True:
             data, _ = self.udpAck.recvfrom(1024)
             if data.startswith(b'over'):
-                _, fileName = data.split(b'_')
+                _, fileName = data.split(b':')
                 fileName = fileName.decode()
+                fileName = fileName.encode("utf-8").decode("utf-8")
                 if fileName == self.fileName:
                     self.sendMsgUI.emit("传输完毕\n")
                     self.closeMsgUI.emit("close")
                     return
                 continue
             elif data.startswith(b'start'):
-                _, fileName = data.split(b'_')
+                _, fileName = data.split(b':')
                 fileName = fileName.decode()
-                if self.start==False and fileName == self.fileName:
+                fileName = fileName.encode("utf-8").decode("utf-8")
+                if self.start == False and fileName == self.fileName:
                     self.sendMsgUI.emit("接受方已连接,开始传输\n")
                     self.start = True
                 continue
-            index, length, _ = data.split(b'_')
+            index, length, _ = data.split(b':')
             index = int(index)
             length = int(length)
             self.lock.acquire()

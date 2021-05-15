@@ -2,13 +2,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QDialog, QHBoxLayout, QVBoxLayout
 import sys
 
-'''
-@description: 使用PyQt5构造UI界面
-@param {*}
-@return {*}
-@author: 张涛麟
-'''
-
 
 class UI(QDialog):
     recvMsgUI = QtCore.pyqtSignal(str)
@@ -135,7 +128,7 @@ class UI(QDialog):
         self.linkUI.setText(self._translate("UDP", "连接网络"))
         self.unlinkUI.setText(self._translate("UDP", "断开网络"))
         self.sendUI.setText(self._translate("UDP", "发送"))
-        self.pathUI.setText(self._translate("UDP", "选择路径"))
+        self.pathUI.setText(self._translate("UDP", "选择文件"))
         self.labelIPUI.setText(self._translate("UDP", "目标IP:"))
         self.labelPortUI.setText(self._translate("UDP", "目标端口:"))
         self.labelRecvUI.setText(self._translate("UDP", "接收区域"))
