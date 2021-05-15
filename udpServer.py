@@ -5,31 +5,51 @@ import sys
 import threading
 import socket
 import UI
+import math
+import time
+
+'''
+@description: 实现服务端的逻辑
+@param {*}
+@return {*}
+'''
 
 
 class UdpServer(UI.UI):
+    '''
+    @description: 服务端中的变量初始化
+    @param {*} self
+    @return {*}
+    '''
+
     def __init__(self):
         super(UdpServer, self).__init__()
-        self.udpRecv = None
-        self.fileName = ''
-        self.fp = None
-        self.bufferSize = 1024
-        self.recvData = set()
-        self.recvIndex = []
-        self.udpAck = None
-        self.totalBytes = 0
-        self.threadServer = None
-        self.recvBytes = 0
-        self.lock = threading.Lock()
-        self.serverIP = None
-        self.clientIP = None
-        self.positions = 0
-        self.start = False
+        self.fileName = ''  # 文件名
+        self.fp = None  # 写文件指针
+        self.recvBytes = 0  # 已经接收到的文件大小
+        self.totalBytes = 0  # 文件总大小
+        self.bufferSize = 1024  # 缓冲窗口大小
+        self.recvData = set()  # 已经得到的数据
+        self.recvIndex = []  # 缓冲窗口
+        self.udpRecv = None  # 用于接收数据包的socket
+        self.udpAck = None  # 用于发送ack包的socket
+        self.threadServer = None  # 用于接收数据包的线程
+        self.threadInfo = None  # 用于打印进度的线程
+        self.lock = threading.Lock()  # 互斥锁
+        self.serverIP = None  # 服务端ip
+        self.clientIP = None  # 客户端ip
+        self.positions = 0  # 缓存窗口起始位置
+        self.start = False  # 是否已经开始文件传输
 
     def serverStart(self):
         self.threadServer = threading.Thread(target=self.recvFile)
         self.threadServer.setDaemon(True)
         self.threadServer.start()
+
+        # 初始化打印进度的线程,设置守护线程,开启线程
+        self.threadInfo = threading.Thread(target=self.getServerInfo)
+        self.threadInfo.setDaemon(True)
+        self.threadInfo.start()
         self.recvMsgUI.emit("正在监听端口 "+str(self.port)+"\n")
 
     def recvFile(self):
@@ -43,13 +63,14 @@ class UdpServer(UI.UI):
             if self.start == False and data.startswith(b'start'):
                 _, self.fileName, self.totalBytes = str(data).split(':')
                 self.totalBytes = int(self.totalBytes[0:-1], 10)
-                for i in range(1024):
+                for i in range(self.bufferSize):
                     self.recvIndex.append(i)
                 self.textBrowserRecvUI.insertPlainText(
                     "接受文件 "+str(self.fileName)+"\n"
                 )
                 self.textBrowserRecvUI.insertPlainText(
-                    "文件总大小为 "+str(round(self.totalBytes/(1024*1024), 2))+" Mb\n"
+                    "文件总大小为 "+str(round(self.totalBytes /
+                                  (1024*1024), 2))+" Mb\n"
                 )
                 self.start = True
                 self.fp = open(self.fileName, 'wb+')
@@ -90,7 +111,7 @@ class UdpServer(UI.UI):
 
             if self.recvBytes >= self.totalBytes and self.start == True:
                 self.textBrowserRecvUI.insertPlainText(
-                    "文件传输完成\n"
+                    "\n文件传输完成\n"
                 )
                 self.lock.acquire()
                 for i in range(100):
@@ -104,6 +125,24 @@ class UdpServer(UI.UI):
                 self.start = False
                 self.lock.release()
                 self.closeMsgUI.emit("close")
+
+    def getServerInfo(self):
+        begin = time.perf_counter()
+        while True:
+            if self.start == True:
+                break
+            continue
+        while self.recvBytes < self.totalBytes:
+            cnt1 = math.ceil(self.recvBytes*50/self.totalBytes)
+            cnt2 = 50-cnt1
+            a = '-'*cnt1
+            b = ' '*cnt2
+            c = (self.recvBytes/self.totalBytes)*100
+            dur = time.perf_counter()-begin
+            self.recvMsgUI.emit(
+                "\r{:^3.0f}%[{}->{}]{:.2f}s".format(c, a, b, dur)
+            )
+            time.sleep(0.1)
 
 
 if __name__ == '__main__':
