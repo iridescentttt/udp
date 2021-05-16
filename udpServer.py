@@ -41,7 +41,14 @@ class UdpServer(UI.UI):
         self.positions = 0  # 缓存窗口起始位置
         self.start = False  # 是否已经开始文件传输
 
+    '''
+    @description: 用于启动服务端
+    @param {*} self
+    @return {*}
+    '''
+
     def serverStart(self):
+        # 初始化接收数据的线程,设置守护线程,开启线程
         self.threadServer = threading.Thread(target=self.recvFile)
         self.threadServer.setDaemon(True)
         self.threadServer.start()
@@ -52,19 +59,31 @@ class UdpServer(UI.UI):
         self.threadInfo.start()
         self.recvMsgUI.emit("正在监听端口 "+str(self.port)+"\n")
 
+    '''
+    @description: 接收数据
+    @param {*} self
+    @return {*}
+    '''
+
     def recvFile(self):
         index = 0  # 接收到数据包的序列号下标
 
         while True:
             data, clientAddress = self.udpRecv.recvfrom(1050)  # 接收数据包
             ackAddress = (clientAddress[0], 1078)  # 本地接收ack地址
-            # 读取第一个数据包,包中的数据格式为self.start_filename_totalBytes
 
+            # 读取第一个数据包,包中的数据格式为start:filename:totalBytes
             if self.start == False and data.startswith(b'start'):
                 _, self.fileName, self.totalBytes = str(data).split(':')
+
+                # 获取文件相关信息
                 self.totalBytes = int(self.totalBytes[0:-1], 10)
+
+                # 初始化缓存窗口
                 for i in range(self.bufferSize):
                     self.recvIndex.append(i)
+
+                # 文本框输出相关信息
                 self.textBrowserRecvUI.insertPlainText(
                     "接受文件 "+str(self.fileName)+"\n"
                 )
@@ -72,23 +91,34 @@ class UdpServer(UI.UI):
                     "文件总大小为 "+str(round(self.totalBytes /
                                   (1024*1024), 2))+" Mb\n"
                 )
+
+                # 开始进行传输
                 self.start = True
+
+                # 清空本地同名文件
                 self.fp = open(self.fileName, 'wb+')
                 self.fp.truncate()
                 self.fp.close()
+
+                # 确认文件传输
                 for i in range(100):
                     self.udpAck.sendto(
                         ("start:"+self.fileName).encode(), ackAddress)
 
             # 继续接收数据包
             elif self.start == True and not data.startswith(b'start'):
+                # 获取数据包序列号以及对应数据
                 index, data = data.split(b':', maxsplit=1)
                 index = int(index.decode())
+
+                # 加锁更新缓存窗口并且写入数据
                 self.lock.acquire()
                 if index in self.recvIndex:
                     self.recvData.add((index, data))
                     self.recvIndex.remove(index)
                     self.recvBytes += len(data)
+
+                # 返回对应序列号的ACK
                 self.udpAck.sendto(
                     (str(index)+":"+str(len(data))+":ACK").encode(), ackAddress)
                 self.lock.release()
@@ -96,7 +126,10 @@ class UdpServer(UI.UI):
             # 达到缓存上限或者接收完所有的数据包
             if self.start == 1 and len(self.recvData) != 0 \
                     and (len(self.recvIndex) == 0 or self.recvBytes >= self.totalBytes):
+                # 加锁将二进制数据写入文件中
                 self.lock.acquire()
+
+                # 按照序列号进行排序
                 writeData = sorted(
                     self.recvData, key=lambda data: data[0])
                 self.fp = open(self.fileName, 'ab+')
@@ -104,27 +137,32 @@ class UdpServer(UI.UI):
                     self.fp.write(data[1])
                 self.fp.close()
                 self.recvData.clear()
+
+                # 更新缓存窗口及其初始位置
                 self.positions = self.recvBytes//self.bufferSize
                 for i in range(1024):
                     self.recvIndex.append(self.positions+i)
                 self.lock.release()
 
+            # 文件传输完成
             if self.recvBytes >= self.totalBytes and self.start == True:
                 self.textBrowserRecvUI.insertPlainText(
                     "\n文件传输完成\n"
                 )
+
+                # 发送文件传输结束数据包
                 self.lock.acquire()
                 for i in range(100):
                     self.udpAck.sendto(
                         ("over:"+self.fileName).encode(), ackAddress)
-                self.recvBytes = 0
-                self.totalBytes = 0
-                self.positions = 0
-                self.recvIndex.clear()
-                self.recvData.clear()
-                self.start = False
                 self.lock.release()
                 self.closeMsgUI.emit("close")
+
+    '''
+    @description: 打印进度
+    @param {*} self
+    @return {*}
+    '''
 
     def getServerInfo(self):
         begin = time.perf_counter()
