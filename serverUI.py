@@ -6,10 +6,22 @@ import socket
 import threading
 import time
 
+'''
+@description: 将服务端函数绑定到相应页面上
+@param {*}
+@return {*}
+'''
+
 
 class ServerUI(udpServer.UdpServer):
     def __init__(self):
         super(ServerUI, self).__init__()
+
+    '''
+    @description: 点击link按钮进行网络连接
+    @param {*} self
+    @return {*}
+    '''
 
     def serverClickLink(self):
         try:
@@ -33,6 +45,12 @@ class ServerUI(udpServer.UdpServer):
             self.linkUI.setEnabled(False)
             self.recvMsgUI.emit("网络已连接\n")
             self.serverStart()
+
+    '''
+    @description: 点击unlink按钮断开网络
+    @param {*} self
+    @return {*}
+    '''
 
     def serverClickUnlink(self):
         self.unlinkUI.setEnabled(False)

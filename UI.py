@@ -2,6 +2,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QDialog, QHBoxLayout, QVBoxLayout
 import sys
 
+'''
+@description: 设置基本窗体
+@param {*}
+@return {*}
+'''
+
 
 class UI(QDialog):
     recvMsgUI = QtCore.pyqtSignal(str)  # 接收方文件框的信号槽

@@ -7,10 +7,22 @@ import socket
 import threading
 import time
 
+'''
+@description: 将客户端函数绑定到相应页面上
+@param {*}
+@return {*}
+'''
+
 
 class ClientUI(udpClient.UdpClient):
     def __init__(self):
         super(ClientUI, self).__init__()
+
+    '''
+    @description: 点击link按钮进行网络连接
+    @param {*} self
+    @return {*}
+    '''
 
     def clientClickLink(self):
         try:
@@ -42,12 +54,24 @@ class ClientUI(udpClient.UdpClient):
             elif self.modeUI.currentIndex() == 1:
                 self.recvMsgUI.emit("网络已连接\n")
 
+    '''
+    @description: 点击unlink按钮断开网络
+    @param {*} self
+    @return {*}
+    '''
+
     def clientClickUnlink(self):
         self.unlinkUI.setEnabled(False)
         self.linkUI.setEnabled(True)
         self.sendMsgUI.emit("网络已断开\n")
         self.udpSend.close()
         self.udpAck.close()
+
+    '''
+    @description: 点击send按钮发送文件
+    @param {*} self
+    @return {*}
+    '''
 
     def clientClickSend(self):
         if self.link == False:
@@ -58,6 +82,12 @@ class ClientUI(udpClient.UdpClient):
             self.unlinkUI.setEnabled(False)
             self.linkUI.setEnabled(False)
             self.clientStart()
+
+    '''
+    @description: 点击路径按钮选择文件
+    @param {*} self
+    @return {*}
+    '''
 
     def clientClickPath(self):
         self.filePath = QtWidgets.QFileDialog.getOpenFileName(

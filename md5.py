@@ -1,9 +1,16 @@
 import hashlib
 import sys
-filePath1=sys.argv[1]
-filePath2=sys.argv[2]
+filePath1 = sys.argv[1]  # 文件1
+filePath2 = sys.argv[2]  # 文件2
+
+'''
+@description: 计算md5码
+@param {*} src
+@return {*}
+'''
+
+
 def out_md5(src):
-    # 简单封装
     m = hashlib.md5()
     m.update(src)
     return m.hexdigest()
