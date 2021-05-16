@@ -4,9 +4,15 @@ import sys
 
 
 class UI(QDialog):
-    recvMsgUI = QtCore.pyqtSignal(str)
-    sendMsgUI = QtCore.pyqtSignal(str)
-    closeMsgUI = QtCore.pyqtSignal(str)
+    recvMsgUI = QtCore.pyqtSignal(str)  # 接收方文件框的信号槽
+    sendMsgUI = QtCore.pyqtSignal(str)  # 发送方文件框的信号槽
+    closeMsgUI = QtCore.pyqtSignal(str)  # 关闭程序的信号槽
+
+    '''
+    @description: 定义控件及其属性,并绑定布局
+    @param {*} self
+    @return {*}
+    '''
 
     def __init__(self):
         super(UI, self).__init__()
@@ -69,18 +75,18 @@ class UI(QDialog):
         self.unlinkUI.setEnabled(False)
         self.textBrowserRecvUI.hide()
 
-        # 链接函数
+        # 绑定函数
         self.modeUI.currentIndexChanged.connect(self.modeChange)
         self.layout_ui()
         self.uiTranslate()
         self.recvMsgUI.connect(self.writeRecvMsg)
         self.sendMsgUI.connect(self.writeSendMsg)
         self.closeMsgUI.connect(self.writeCloseMsg)
+
     '''
     @description: 控件的布局
     @param {*} self
     @return {*}
-    @author: 张涛麟
     '''
 
     def layout_ui(self):
@@ -108,8 +114,6 @@ class UI(QDialog):
         self.vBoxSend.addWidget(self.textBrowserRecvUI)
         self.vBox.addLayout(self.vBoxSet)
         self.vBox.addLayout(self.vBoxSend)
-
-        # 将左右布局添加到窗体布局
         self.hBoxAll.addLayout(self.vBox)
         self.hBoxAll.addLayout(self.vBox)
 
@@ -120,7 +124,6 @@ class UI(QDialog):
     @description: 用于添加文字
     @param {*} self
     @return {*}
-    @author: 张涛麟
     '''
 
     def uiTranslate(self):
@@ -137,11 +140,11 @@ class UI(QDialog):
         self.labelClientIPUI.setText(self._translate("UDP", "本机ip"))
         self.modeUI.setItemText(0, self._translate("UDP", "UDP 客户端"))
         self.modeUI.setItemText(1, self._translate("UDP", "UDP 服务端"))
+
     '''
     @description: 模式切换时界面切换
     @param {*} self
     @return {*}
-    @author: 张涛麟
     '''
 
     def modeChange(self):
@@ -175,6 +178,13 @@ class UI(QDialog):
             self.clientIPUI.hide()
             self.labelClientIPUI.hide()
 
+    '''
+    @description: 将不同的信号槽绑定到不同的文本框
+    @param {*} self
+    @param {*} msg
+    @return {*}
+    '''
+
     def writeRecvMsg(self, msg):
         self.textBrowserRecvUI.insertPlainText(msg)
         # 滚动条移动到结尾
@@ -186,9 +196,15 @@ class UI(QDialog):
         self.textBrowserSendUI.moveCursor(QtGui.QTextCursor.End)
 
     def writeCloseMsg(self, msg):
-        print(msg)
         if msg == "close":
             self.close()
+
+    '''
+    @description: 关闭窗口的提示
+    @param {*} self
+    @param {*} event
+    @return {*}
+    '''
 
     def closeEvent(self, event):
         close = QtWidgets.QMessageBox()
