@@ -89,7 +89,7 @@ class UdpServer(UI.UI):
                 )
                 self.textBrowserRecvUI.insertPlainText(
                     "文件总大小为 "+str(round(self.totalBytes /
-                                  (1024*1024), 2))+" Mb\n"
+                                  (1024*1024), 2))+" MB\n"
                 )
 
                 # 开始进行传输

@@ -63,7 +63,7 @@ class UdpClient(UI.UI):
 
         # 在文本框输出文件相关信息
         self.sendMsgUI.emit(
-            "文件总大小为 "+str(round(self.totalBytes/(1024*1024), 2))+" Mb\n"
+            "文件总大小为 "+str(round(self.totalBytes/(1024*1024), 2))+" MB\n"
         )
         self.sendMsgUI.emit("等待接受方连接\n")
 
