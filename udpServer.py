@@ -165,11 +165,11 @@ class UdpServer(UI.UI):
     '''
 
     def getServerInfo(self):
-        begin = time.perf_counter()
         while True:
             if self.start == True:
                 break
             continue
+        begin = time.perf_counter()
         while self.recvBytes < self.totalBytes:
             cnt1 = math.ceil(self.recvBytes*50/self.totalBytes)
             cnt2 = 50-cnt1
